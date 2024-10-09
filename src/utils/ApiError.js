@@ -25,7 +25,7 @@ class ApiError extends Error {                       // class ApiError extents p
     }
 }
 
-export {ApiError}
+export { ApiError }
 
 
 // The code defines a custom error class called ApiError that extends (inherits) from the built-in JavaScript Error class. This custom class allows you to throw errors with more specific information, like a statusCode, message, and additional errors
