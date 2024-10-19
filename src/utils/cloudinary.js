@@ -10,7 +10,7 @@ cloudinary.config({
 });
 
 
-const uploadOnCloudinary = async (localFilePath) => {                  // to upload file from local to cloudinary
+const uploadOnCloudinary = async(localFilePath) => {                  // to upload file from local to cloudinary
     try {
 
         if(!localFilePath) return null;                        
