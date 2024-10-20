@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import mongoose from "mongoose";
 
 // Create method for accesstoken and refreshtoken
 const generateAccessAndRefreshTokens = async (userId)=>{
@@ -343,6 +344,53 @@ const getUserChannelProfile = asyncHandler(async(req, res)=>{
     )
 })
 
+const getWatchHistory = asyncHandler(async(req, res)=>{
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: mongoose.Types.ObjectId(req.user._id)  // here we find user, cause we have to find watchHistory of user for that 1st we fetch user
+            }                                        
+        },
+        {
+            $lookup:{
+                form: "videos",
+                localField: "watchHisotory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline:[
+                    {
+                        $lookup:{
+                            form: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullname:1,
+                                        username:1,
+                                        avatar:1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields:{
+                            owner: {
+                                $first: "$owner"            // as we know lookup gives valuse in array, so to reduce efforts for frontEnd, we add new field "owner" which will take first object form the "array", now filed "owner" is "object" 
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]             
+)
+
+    return res.status(200).json(new ApiResponse(200, user[0].watchHistory, "Watch History fetched"))
+})
+
 export { 
     registerUser,
     loginUser,
@@ -352,5 +400,6 @@ export {
     updateAccountDetails,
     updateUserAvatar,
     updateCoverImage,
-    getUserChannelProfile
+    getUserChannelProfile,
+    getWatchHistory
 }
